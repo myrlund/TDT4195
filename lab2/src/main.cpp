@@ -32,12 +32,11 @@ int main(int argc, char **argv) {
 
     glutInitDisplayMode( GLUT_RGBA | GLUT_ALPHA | GLUT_DOUBLE | GLUT_DEPTH );
 
-    // TODO
-    // Use the information of screen size, acquired in lines 30 
-    // and 31, to center your screen of 512x512 pixels, in the 
-    // middle of your screen.
-    glutInitWindowPosition( 0,0 );
-    glutInitWindowSize( 512, 512 );
+    int iWindowWidth = 512;
+    int iWindowHeight = 512;
+    
+    glutInitWindowPosition( iScreenWidth / 2 - iWindowWidth / 2, iScreenHeight / 2 - iWindowHeight / 2 );
+    glutInitWindowSize( iWindowWidth, iWindowHeight );
 
     g_iGLUTWindowHandle = glutCreateWindow( "OpenGL" );
 

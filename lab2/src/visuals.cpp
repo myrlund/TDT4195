@@ -77,6 +77,12 @@ void KeyboardGL( unsigned char c, int x, int y )
         g_eCurrentScene = 5;
     }
         break;
+    case '6':
+    {
+        glClearColor( 0.7f, 0.7f, 0.7f, 1.0f );                      // Light-Gray background
+        g_eCurrentScene = 6;
+    }
+        break;
     case 's':
     case 'S':
     {
@@ -143,6 +149,9 @@ void DisplayGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clean up the colour of the window
     // and the depth buffer
 
+    // Reset current shader
+    glUseProgram(0);
+
     switch ( g_eCurrentScene )
     {
     case 1:
@@ -170,7 +179,13 @@ void DisplayGL()
         RenderScene5();
     }
         break;
+    case 6:
+    {
+        RenderScene6();
     }
+        break;
+    }
+
 
 
     glutSwapBuffers();
@@ -182,25 +197,12 @@ void DisplayGL()
 
 void RenderScene1()
 {
-    // TODO: Replace RenderScene 1 and plot a
-    // glutSolidTorus( double innerRadius, double OuterRadius, int Sided , Int Rings);
-    // innerRadius
-    //  Inner radius of the torus. 
-    // outerRadius
-    //  Outer radius of the torus. 
-    // nsides
-    //  Number of sides for each radial section. 
-    // rings
-    //  Number of radial divisions for the torus.
-
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     glColor3f(1.0, 0.5, 0.2);							   // Set drawing colour = orange
-    glutSolidCube(20.0 );							   // Draw a built-in primitive
-
-
-
+    glutSolidTorus(10.0, 20.0, 100, 200);
+    
 }
 
 void RenderScene2()
@@ -282,10 +284,6 @@ void RenderScene4()
 
 void RenderScene5()
 {
-    // TODO
-    // The new code should plot a blue triangle. Changing 
-    // also the coordinates of the triangle, so one of the 
-    // vertex is localized in to top left corner.
 
     // Use our shader
     glUseProgram(programID);
@@ -309,6 +307,31 @@ void RenderScene5()
 
 }
 
+
+void RenderScene6()
+{
+
+    // Use our shader
+    glUseProgram(programID);
+
+    // 1rst attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                3,                  // size
+                GL_FLOAT,           // type
+                GL_FALSE,           // normalized?
+                0,                  // stride
+                (void*)0            // array buffer offset
+                );
+
+    // Draw the triangles !
+    glDrawArrays(GL_TRIANGLES, 3, 9);
+
+    glDisableVertexAttribArray(0);
+
+}
 
 
 
@@ -364,9 +387,24 @@ void SetupGL() //
 
     //VBO
     static const GLfloat g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, 0.0f,
+        // Scene 5
+        -1.0f, 1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
+        -0.75f,  1.0f, 0.0f,
+
+        // Scene 6
+        -1.0f, -1.0f, 0.0f,
+        0.0f,   0.0f, 0.0f,
+        0.0f,  -1.0f, 0.0f,
+
+        -1.0f, 1.0f, 0.0f,
+        0.0f,  0.0f, 0.0f,
         0.0f,  1.0f, 0.0f,
+
+        1.0f, 1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+
     };
 
     // Generate 1 buffer, put the resulting identifier in vertexbuffer

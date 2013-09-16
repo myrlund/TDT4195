@@ -1,0 +1,180 @@
+\documentclass[11pt,a4paper]{article}
+
+% For å kunne skrive norske tegn.
+\usepackage[utf8]{inputenc}
+
+\usepackage{minted}
+
+% For å inkludere figurer.
+\usepackage{graphicx}
+
+% Ekstra matematikkfunksjoner.
+\usepackage{amsmath,amssymb}
+
+%\usepackage[section]{placeins}
+
+% \usepackage{hyperref}
+% \hypersetup{%
+%   colorlinks=true, % hyperlinks will be black
+%   urlcolor=red,
+%   linkcolor=red
+% }
+
+% For å få tilgang til finere linjer (til bruk i tabeller og slikt).
+%\usepackage{booktabs}
+
+% For justering av figurtekst og tabelltekst.
+%\usepackage[font=small,labelfont=bf]{caption}
+
+% Subsections A, B,
+\renewcommand{\thesection}{\Roman{section}}
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+% Disse kommandoene kan gjøre det enklere for LaTeX å plassere figurer og tabeller der du ønsker.
+\setcounter{totalnumber}{5}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\floatpagefraction}{0.35}
+
+\begin{document}
+
+  % Rapportens tittel:
+  \title{Lab 2 \\ \large{TDT4195: Grunnleggende Visuell Databehandling}}
+  \author{Jonas Myrlund}
+
+  % Her ber vi LaTeX om å lage tittelen (til nå har vi bare sagt hva den skal inneholde):
+  \maketitle
+  
+  \section{Change RenderScreen5} % (fold)
+  \label{sec2}
+  
+    To get the top left corner involved, I changed the vertex matrix to the following (note the awesome new general shape):
+
+    \begin{minted}[gobble=6]{c++}
+      static const GLfloat g_vertex_buffer_data[] = {
+          -1.0f,   1.0f, 0.0f,
+          1.0f,   -1.0f, 0.0f,
+          -0.75f,  1.0f, 0.0f,
+      };
+    \end{minted}
+
+    In order for it to turn blue, I changed the SimpleFragmentShader to the following:
+
+    \begin{minted}[gobble=6]{glsl}
+      #version 330 core
+
+      // Ouput data
+      out vec3 color;
+
+      void main()
+      {
+
+        // Output color = blue 
+        color = vec3(0,0,1);
+
+      }
+    \end{minted}
+  
+  % section sec2 (end)
+
+  \section{Create RenderScreen6} % (fold)
+  \label{sec:create_renderscreen6}
+  
+    We'll reuse the shader from RenderScreen5, and simply extend the \texttt{g\_vertex\_buffer\_data} array with the required vertices.
+
+    To make the scene load, I also had to perform some straight-forward changes around the project, but I won't detail them here.
+
+    The matrix now looks like this:
+
+    \begin{minted}[gobble=6]{c++}
+      static const GLfloat g_vertex_buffer_data[] = {
+
+          // Scene 5
+          -1.0f, 1.0f, 0.0f,
+          1.0f, -1.0f, 0.0f,
+          -0.75f,  1.0f, 0.0f,
+
+          // Scene 6
+          -1.0f, -1.0f, 0.0f,
+          0.0f,   0.0f, 0.0f,
+          0.0f,  -1.0f, 0.0f,
+
+          -1.0f, 1.0f, 0.0f,
+          0.0f,  0.0f, 0.0f,
+          0.0f,  1.0f, 0.0f,
+
+          1.0f, 1.0f, 0.0f,
+          1.0f, -1.0f, 0.0f,
+          0.0f, 0.0f, 0.0f,
+
+      };
+    \end{minted}
+
+    And the relevant code in RenderScreen6 looks like this, working from an offset of 3 vertices:
+
+    \begin{minted}[gobble=6]{c++}
+      glDrawArrays(GL_TRIANGLES, 3, 9);
+    \end{minted}
+
+    Otherwise, RenderScreen6 looks just like RenderScreen5.
+
+  % section create_renderscreen6 (end)
+
+  \section{Minor code tasks} % (fold)
+  \label{sec1}
+
+    \subsection{Center window} % (fold)
+    \label{sub:center_window}
+      
+      The $x$ position is half the window's width to the left of the middle of the screen.
+      Likewise for $y$.
+
+      \begin{minted}[gobble=8]{c++}
+        int iWindowWidth = 512;
+        int iWindowHeight = 512;
+        
+        glutInitWindowPosition( iScreenWidth / 2 - iWindowWidth / 2,
+                                iScreenHeight / 2 - iWindowHeight / 2 );
+        glutInitWindowSize( iWindowWidth, iWindowHeight );
+      \end{minted}
+
+    % subsection center_window (end)
+  
+    \subsection{Render a torus} % (fold)
+      \label{sub:render_a_torus}
+      
+        Replacing the rendering call in RenderScreen1 with:
+
+        \begin{minted}[gobble=8]{c++}
+          glutSolidTorus(10.0, 20.0, 100, 200);
+        \end{minted}
+
+      % subsection render_a_torus (end)  
+
+    \subsection{Explain why the Scene 1,2,3 and 4 are displayed wrong after the user enable scene 5} % (fold)
+    \label{sub:explain_why_the_scene_1_2_3_and_4_are_displayed_wrong_after_the_user_enable_scene_5}
+    
+      The \texttt{glUseProgram(shaderProgramId)} call says that we want to use the given shader, as we do in scene 5.
+      However, the reset call, \texttt{glUseProgram(0)} is never called, so the shader from 5 still applies.
+
+      Calling \texttt{glUseProgram(0)} whenever switching between scenes solves this problem.
+
+    % subsection explain_why_the_scene_1_2_3_and_4_are_displayed_wrong_after_the_user_enable_scene_5 (end)
+    
+  % section sec1 (end)
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

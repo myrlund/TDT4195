@@ -232,6 +232,8 @@ void RenderScene1()
     // Draw the triangle !
     glDrawArrays(GL_TRIANGLES, 0, 3); // From index 0 to 3 -> 1 triangle
 
+
+
     glDisableVertexAttribArray(0);
 
 
@@ -429,12 +431,62 @@ void SetupGL() //
     programID_1 = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
     programID_2 = LoadShaders( "SimpleTransform.vertexshader", "SimpleFragmentShader.fragmentshader" );
 
-    //VBO
     static const GLfloat g_vertex_buffer_data[] = {
         -1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
         0.0f,  1.0f, 0.0f,
     };
+
+    // //VBO
+    // static const GLfloat g_vertex_buffer_data[] = {
+    //     -1.0f,-1.0f,-1.0f,
+    //     -1.0f,-1.0f, 1.0f,
+    //     -1.0f, 1.0f, 1.0f,
+
+    //     1.0f, 1.0f,-1.0f,
+    //     -1.0f,-1.0f,-1.0f,
+    //     -1.0f, 1.0f,-1.0f,
+
+    //     1.0f,-1.0f, 1.0f,
+    //     -1.0f,-1.0f,-1.0f,
+    //     1.0f,-1.0f,-1.0f,
+
+    //     1.0f, 1.0f,-1.0f,
+    //     1.0f,-1.0f,-1.0f,
+    //     -1.0f,-1.0f,-1.0f,
+
+    //     -1.0f,-1.0f,-1.0f,
+    //     -1.0f, 1.0f, 1.0f,
+    //     -1.0f, 1.0f,-1.0f,
+
+    //     1.0f,-1.0f, 1.0f,
+    //     -1.0f,-1.0f, 1.0f,
+    //     -1.0f,-1.0f,-1.0f,
+
+    //     -1.0f, 1.0f, 1.0f,
+    //     -1.0f,-1.0f, 1.0f,
+    //     1.0f,-1.0f, 1.0f,
+
+    //     1.0f, 1.0f, 1.0f,
+    //     1.0f,-1.0f,-1.0f,
+    //     1.0f, 1.0f,-1.0f,
+
+    //     1.0f,-1.0f,-1.0f,
+    //     1.0f, 1.0f, 1.0f,
+    //     1.0f,-1.0f, 1.0f,
+
+    //     1.0f, 1.0f, 1.0f,
+    //     1.0f, 1.0f,-1.0f,
+    //     -1.0f, 1.0f,-1.0f,
+
+    //     1.0f, 1.0f, 1.0f,
+    //     -1.0f, 1.0f,-1.0f,
+    //     -1.0f, 1.0f, 1.0f,
+
+    //     1.0f, 1.0f, 1.0f,
+    //     -1.0f, 1.0f, 1.0f,
+    //     1.0f,-1.0f, 1.0f
+    // };
 
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
     glGenBuffers(1, &vertexbuffer);

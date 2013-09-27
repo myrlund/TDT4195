@@ -8,7 +8,8 @@ extern int g_iGLUTWindowHandle;
 extern int g_iErrorCode ;
 
 extern unsigned char g_eCurrentScene;
-extern  float rot_angle;
+extern double rot_angle;
+
 //-------- Functions --------------------------------
 // Cleanup : This is the exist function.
 void Cleanup( int exitCode, bool bExit = true );

@@ -7,17 +7,23 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "visuals.h"
-#include <time.h>
+#include <sys/time.h>
 #include "shader.hpp"
 
 #define PI 3.14159265359
+
+#define NANO 0.000000001
 
 // This will be used with shader
 //GLuint VertexArrayID;
 GLuint vertexbuffer;
 GLuint programID_1, programID_2;
 
-int last_time, current_time;
+timespec last_time, current_time;
+double seconds, nseconds, dt;
+
+double xpos = 0;
+int dir = 1;
 
 GLuint MatrixID; // Handler Matrix for moving the cam
 glm::mat4 MVP; // FInal Homogeneous Matrix
@@ -25,30 +31,98 @@ glm::mat4 Projection,View,Model;
 void Idle()
 {
 
-    current_time = clock(); // update current timer
+    clock_gettime(CLOCK_MONOTONIC, &current_time); // update current timer
 
-    if(rot_angle ==-1) // only happens the first time Idel is called . This avoid timer problems.
+    if(rot_angle == -1) // only happens the first time Idel is called . This avoid timer problems.
     {
-        rot_angle =0;
-        Model      = glm::mat4(1.0f);
+        rot_angle = 0;
+        Model = glm::mat4(1.0f);
+        Model = glm::scale(Model, glm::vec3(0.5f));
     }
     else
     {
-        int dt = current_time - last_time;
+        seconds  = current_time.tv_sec  - last_time.tv_sec;
+        nseconds = current_time.tv_nsec - last_time.tv_nsec;
+        dt       = nseconds * NANO;
+    
+        /* Compute animation here*/
+        if (g_eCurrentScene == 1)
+        {
+            rot_angle = 60.0;
+
+            if (dt > 0.0) {
+                Model = glm::rotate(Model, float(dt * rot_angle), glm::vec3(1,0,0));
+            }
+        }
 
         /* Compute animation here*/
-        if (g_eCurrentScene == 4)
+        if (g_eCurrentScene == 2)
         {
             // rotation speed is 60 degrees per second = .06 per ms;
 
-            rot_angle =0.06;
-            std::cout << "ang: " <<float(rot_angle*dt)  << std::endl;
-            Model = glm::rotate(Model, float(rot_angle*dt), glm::vec3(0,1,0)); // where x, y, z is axis of rotation (e.g. 0 1 0)
+            rot_angle = 60.0;
+            
+            // std::cout << "ang: " << float(rot_angle)  << std::endl;
+
+            if (dt > 0.0) {
+                Model = glm::rotate(Model, float(dt * rot_angle), glm::vec3(1,0,0));
+                Model = glm::rotate(Model, float(dt * rot_angle) * 0.8f, glm::vec3(0,1,0));
+            }
         }
+
+        /* Compute animation here*/
+        if (g_eCurrentScene == 3)
+        {
+            // rotation speed is 60 degrees per second = .06 per ms;
+
+            rot_angle = 60.0;
+            
+            // std::cout << "ang: " << float(rot_angle)  << std::endl;
+
+            if (dt > 0.0) {
+                Model = glm::rotate(Model, float(dt * rot_angle), glm::vec3(1,0,0));
+                Model = glm::rotate(Model, float(dt * rot_angle) * 0.8f, glm::vec3(0,1,0));
+                Model = glm::rotate(Model, float(dt * rot_angle) * 0.1f, glm::vec3(0,0,1));
+            }
+        }
+
+
+        if (g_eCurrentScene == 4)
+        {
+            if (xpos > 4.0 || xpos < -4.0)
+                dir *= -1;
+
+            if (dt > 0.0) {
+                float dx = dt * dir;
+                xpos += dx;
+                // std::cout << "x: " << float(xpos) << std::endl;
+                Model = glm::translate(Model, glm::vec3(dx, 0.0f, 0.0f)); // where x, y, z is axis of rotation (e.g. 0 1 0)
+            }
+        }
+
+        if (g_eCurrentScene == 5)
+        {
+            rot_angle = 60.0;
+
+            if (xpos > 4.0 || xpos < -4.0)
+                dir *= -1;
+
+            if (dt > 0.0) {
+                float dx = dt * dir;
+                xpos += dx;
+                // std::cout << "x: " << float(xpos) << std::endl;
+                Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, dx)); // where x, y, z is axis of rotation (e.g. 0 1 0)
+
+                Model = glm::rotate(Model, float(dt * rot_angle), glm::vec3(1,0,0));
+                Model = glm::rotate(Model, float(dt * rot_angle) * 0.8f, glm::vec3(0,1,0));
+                Model = glm::rotate(Model, float(dt * rot_angle) * 0.1f, glm::vec3(0,0,1));
+            }
+        }
+
     }
     glutPostRedisplay();
 
-    last_time = clock();// update when the last timer;
+    clock_gettime(CLOCK_MONOTONIC, &last_time); // update when the last timer;
 
 
 }
@@ -69,6 +143,10 @@ void ReshapeGL( int w, int h )
 
 }
 
+void ResetModel()
+{
+    Model = glm::mat4(1.0f);
+}
 
 void KeyboardGL( unsigned char c, int x, int y )
 {
@@ -81,30 +159,35 @@ void KeyboardGL( unsigned char c, int x, int y )
     {
         glClearColor( 1.0f, 1.0f, 1.0f, 1.0f );                         // White background
         g_eCurrentScene = 1;
+        ResetModel();
     }
         break;
     case '2':
     {
         glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );                         // Black background
         g_eCurrentScene = 2;
+        ResetModel();
     }
         break;
     case '3':
     {
         glClearColor( 0.27f, 0.27f, 0.27f, 1.0f );                      // Dark-Gray background
         g_eCurrentScene = 3;
+        ResetModel();
     }
         break;
     case '4':
     {
         glClearColor( 0.4f, 0.4f, 0.4f, 1.0f );                      // Light-Gray background
         g_eCurrentScene = 4;
+        ResetModel();
     }
         break;
     case '5':
     {
         glClearColor( 0.7f, 0.7f, 0.7f, 1.0f );                      // Light-Gray background
         g_eCurrentScene = 5;
+        ResetModel();
     }
         break;
     case 's':
@@ -216,10 +299,14 @@ void RenderScene1()
     // Use our shader
     glUseProgram(programID_1);
 
+    glm::mat4 MVP = Model;
 
-    // 1rst attribute buffer : vertices
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+
+    // 1rst attribute buffer : vertices
     glVertexAttribPointer(
                 0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
                 3,                  // size
@@ -228,11 +315,9 @@ void RenderScene1()
                 0,                  // stride
                 (void*)0            // array buffer offset
                 );
-
+    
     // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 3); // From index 0 to 3 -> 1 triangle
-
-
+    glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // From index 0 to 3 -> 1 triangle
 
     glDisableVertexAttribArray(0);
 
@@ -252,7 +337,7 @@ void RenderScene2()
                 glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
                 );
     // Model matrix : an identity matrix (model will be at the origin)
-    Model      = glm::mat4(1.0f);
+    
     // Our ModelViewProjection : multiplication of our 3 matrices
     MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
@@ -277,7 +362,7 @@ void RenderScene2()
                 );
 
     // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 3); // From index 0 to 3 -> 1 triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 12); // From index 0 to 3 -> 1 triangle
 
     glDisableVertexAttribArray(0);
 
@@ -296,7 +381,7 @@ void RenderScene3()
                 glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
                 );
     // Model matrix : an identity matrix (model will be at the origin)
-    Model      = glm::mat4(1.0f);
+    //Model      = glm::mat4(1.0f);
     // Our ModelViewProjection : multiplication of our 3 matrices
     MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
 
@@ -321,7 +406,7 @@ void RenderScene3()
                 );
 
     // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 3); // From index 0 to 3 -> 1 triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 12); // From index 0 to 3 -> 1 triangle
 
     glDisableVertexAttribArray(0);
 
@@ -364,7 +449,7 @@ void RenderScene4()
                 );
 
     // Draw the triangle !
-    glDrawArrays(GL_TRIANGLES, 0, 3); // From index 0 to 3 -> 1 triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 12); // From index 0 to 3 -> 1 triangle
 
     glDisableVertexAttribArray(0);
 
@@ -373,6 +458,44 @@ void RenderScene4()
 void RenderScene5()
 {
 
+    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+
+    Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+
+    // Camera matrix
+    View       = glm::lookAt(
+                glm::vec3(4,3,3), // Camera is at (4,3,3), in World Space
+                glm::vec3(0,0,0), // and looks at the origin
+                glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+                );
+    // Model matrix : being updated by idle
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    MVP        = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+
+    // Use our shader
+    glUseProgram(programID_2);
+
+    // Send our transformation to the currently bound shader,
+    // in the "MVP" uniform
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+
+    // 1rst attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(
+                0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+                3,                  // size
+                GL_FLOAT,           // type
+                GL_FALSE,           // normalized?
+                0,                  // stride
+                (void*)0            // array buffer offset
+                );
+
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLES, 0, 3 * 12); // From index 0 to 3 -> 1 triangle
+
+    glDisableVertexAttribArray(0);
 
 }
 
@@ -428,65 +551,65 @@ void SetupGL() //
     //        glBindVertexArray(VertexArrayID);
 
     // Create and compile our GLSL program from the shaders
-    programID_1 = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
-    programID_2 = LoadShaders( "SimpleTransform.vertexshader", "SimpleFragmentShader.fragmentshader" );
+    programID_1 = LoadShaders( "SimpleVertexShader.glsl", "SimpleFragmentShader.glsl" );
+    programID_2 = LoadShaders( "SimpleTransform.glsl", "SimpleFragmentShader.glsl" );
 
-    static const GLfloat g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        0.0f,  1.0f, 0.0f,
-    };
-
-    // //VBO
     // static const GLfloat g_vertex_buffer_data[] = {
-    //     -1.0f,-1.0f,-1.0f,
-    //     -1.0f,-1.0f, 1.0f,
-    //     -1.0f, 1.0f, 1.0f,
-
-    //     1.0f, 1.0f,-1.0f,
-    //     -1.0f,-1.0f,-1.0f,
-    //     -1.0f, 1.0f,-1.0f,
-
-    //     1.0f,-1.0f, 1.0f,
-    //     -1.0f,-1.0f,-1.0f,
-    //     1.0f,-1.0f,-1.0f,
-
-    //     1.0f, 1.0f,-1.0f,
-    //     1.0f,-1.0f,-1.0f,
-    //     -1.0f,-1.0f,-1.0f,
-
-    //     -1.0f,-1.0f,-1.0f,
-    //     -1.0f, 1.0f, 1.0f,
-    //     -1.0f, 1.0f,-1.0f,
-
-    //     1.0f,-1.0f, 1.0f,
-    //     -1.0f,-1.0f, 1.0f,
-    //     -1.0f,-1.0f,-1.0f,
-
-    //     -1.0f, 1.0f, 1.0f,
-    //     -1.0f,-1.0f, 1.0f,
-    //     1.0f,-1.0f, 1.0f,
-
-    //     1.0f, 1.0f, 1.0f,
-    //     1.0f,-1.0f,-1.0f,
-    //     1.0f, 1.0f,-1.0f,
-
-    //     1.0f,-1.0f,-1.0f,
-    //     1.0f, 1.0f, 1.0f,
-    //     1.0f,-1.0f, 1.0f,
-
-    //     1.0f, 1.0f, 1.0f,
-    //     1.0f, 1.0f,-1.0f,
-    //     -1.0f, 1.0f,-1.0f,
-
-    //     1.0f, 1.0f, 1.0f,
-    //     -1.0f, 1.0f,-1.0f,
-    //     -1.0f, 1.0f, 1.0f,
-
-    //     1.0f, 1.0f, 1.0f,
-    //     -1.0f, 1.0f, 1.0f,
-    //     1.0f,-1.0f, 1.0f
+    //     -1.0f, -1.0f, 0.0f,
+    //     1.0f, -1.0f, 0.0f,
+    //     0.0f,  1.0f, 0.0f,
     // };
+
+    //VBO
+    static const GLfloat g_vertex_buffer_data[] = {
+        -1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+
+        1.0f, 1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f,
+
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+
+        1.0f, 1.0f,-1.0f,
+        1.0f,-1.0f,-1.0f,
+        -1.0f,-1.0f,-1.0f,
+
+        -1.0f,-1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+
+        1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        -1.0f,-1.0f,-1.0f,
+
+        -1.0f, 1.0f, 1.0f,
+        -1.0f,-1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f,-1.0f,
+
+        1.0f,-1.0f,-1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f,
+
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f,-1.0f,
+
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f,-1.0f,
+        -1.0f, 1.0f, 1.0f,
+
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f,-1.0f, 1.0f
+    };
 
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
     glGenBuffers(1, &vertexbuffer);

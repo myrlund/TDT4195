@@ -13,7 +13,7 @@ int g_iWindowWidth = 512;
 int g_iWindowHeight = 512;
 int g_iGLUTWindowHandle = 0;
 int g_iErrorCode = 0;
-float rot_angle;
+double rot_angle;
 unsigned char g_eCurrentScene = 1;
 
 //---------- Main program
@@ -40,7 +40,9 @@ int main(int argc, char **argv) {
     //Call to the drawing function
     glutDisplayFunc(DisplayGL);
     glutReshapeFunc(ReshapeGL);
-    glutIdleFunc(Idle); rot_angle =-1;
+    glutIdleFunc(Idle);
+    rot_angle = -1;
+
     // Loop require by OpenGL
     glutMainLoop();
     return 0;
